@@ -17,21 +17,22 @@ namespace Lab4_CSHARP.ViewModels
 
     internal class ViewModel : BaseViewModel, INotifyPropertyChanged
     {
-        private static ViewModel _instance;
         #region Fields
+        private static ViewModel _instance;
         private static DateTime? _birthday;
-        private RelayCommand<object> _proceedCommand;
-        private RelayCommand<object> _cancelCommand;
         private static string _name;
         private static string _lastName;
         private static string _mail;
+        private bool _edit;
+        private ObservableCollection<Person> _people;
         #region Commands
         private RelayCommand<object> _addCommand;
         private RelayCommand<object> _editCommand;
         private RelayCommand<object> _copyCommand;
         private RelayCommand<object> _deleteCommand;
         private RelayCommand<object> _closeCommand;
-
+        private RelayCommand<object> _proceedCommand;
+        private RelayCommand<object> _cancelCommand;
 
         private RelayCommand<object> _sortByName;
         private RelayCommand<object> _sortByLastName;
@@ -43,8 +44,7 @@ namespace Lab4_CSHARP.ViewModels
         private RelayCommand<object> _sortByBirthdayness;
 
         #endregion
-        private bool _edit;
-        private ObservableCollection<Person> _people;
+        
         #endregion
 
         #region Properties
@@ -65,89 +65,6 @@ namespace Lab4_CSHARP.ViewModels
             }
         }
         public Person SelectedPerson { get; set; }
-        #region Commands
-        public RelayCommand<object> AddCommand
-        {
-            get
-            {
-                return _addCommand ??= new RelayCommand<object>(
-                    AddMethod);
-            }
-        }
-        private void AddMethod(object obj)
-        {
-            _edit = false;
-            Clear();
-            NavigationManager.Instance.Navigate(ViewType.Add);
-
-        }
-        public RelayCommand<object> EditCommand
-        {
-            get
-            {
-                return _editCommand ??= new RelayCommand<object>(
-                   EditMethod, o =>UserSelected());
-            }
-        }
-        public RelayCommand<object> CopyCommand
-        {
-            get
-            {
-                return _copyCommand ??= new RelayCommand<object>(
-                    CopyMethod, o => UserSelected());
-            }
-        }
-        private void CopyMethod(object obj)
-        {
-            StationManager.DataStorage.AddPerson(new Person(SelectedPerson.Name, SelectedPerson.LastName, SelectedPerson.Mail, SelectedPerson.Birthday));
-            People = new ObservableCollection<Person>(StationManager.DataStorage.UsersList);
-        }
-        private void EditMethod(object obj)
-        {
-            _edit = true;
-           Fill();
-           NavigationManager.Instance.Navigate(ViewType.Edit);
-        }
-        public RelayCommand<object> DeleteCommand
-        {
-            get
-            {
-                return _deleteCommand ??= new RelayCommand<object>(
-                    DeleteMethod, o =>UserSelected());
-            }
-        }
-
-        private async void DeleteMethod(object obj)
-        {
-            if (MessageBox.Show($"Delete {SelectedPerson}?",
-                    "Delete?",
-                    MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
-            LoaderManager.Instance.ShowLoader();
-            await Task.Run(() =>
-            {
-                StationManager.DataStorage.DeletePerson(SelectedPerson);
-                SelectedPerson = null;
-                People = new ObservableCollection<Person>(StationManager.DataStorage.UsersList);
-            }); 
-            LoaderManager.Instance.HideLoader();
-
-
-
-        }
-
-        public RelayCommand<object> CloseCommand
-        {
-            get
-            {
-                return _closeCommand ??= new RelayCommand<object>(o => Environment.Exit(0));
-            }
-        }
-
-
-        #endregion
-
-        #endregion
-
         public DateTime? Birthday
         {
             private get
@@ -168,8 +85,8 @@ namespace Lab4_CSHARP.ViewModels
             }
             set
             {
-              
-                    _name = value;
+
+                _name = value;
                 OnPropertyChanged();
             }
         }
@@ -185,10 +102,10 @@ namespace Lab4_CSHARP.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public string Mail
         {
-            private get =>_mail;
+            private get => _mail;
             set
             {
                 _mail = value;
@@ -196,29 +113,48 @@ namespace Lab4_CSHARP.ViewModels
             }
         }
 
-        private bool CanExecute()
+        #region Commands
+        public RelayCommand<object> AddCommand
         {
-            return !string.IsNullOrEmpty(Mail) && Birthday.HasValue && !string.IsNullOrEmpty(LastName) && !string.IsNullOrEmpty(Name);
+            get
+            {
+                return _addCommand ??= new RelayCommand<object>(
+                    AddMethod);
+            }
+        }
+     
+        public RelayCommand<object> EditCommand
+        {
+            get
+            {
+                return _editCommand ??= new RelayCommand<object>(
+                   EditMethod, o =>UserSelected());
+            }
+        }
+        public RelayCommand<object> CopyCommand
+        {
+            get
+            {
+                return _copyCommand ??= new RelayCommand<object>(
+                    CopyMethod, o => UserSelected());
+            }
+        }
+       
+        public RelayCommand<object> DeleteCommand
+        {
+            get
+            {
+                return _deleteCommand ??= new RelayCommand<object>(
+                    DeleteMethod, o =>UserSelected());
+            }
         }
 
-        private bool UserSelected()
+        public RelayCommand<object> CloseCommand
         {
-            return SelectedPerson != null;
-        }
-
-        private void Fill()
-        {
-            Name = SelectedPerson.Name;
-            LastName = SelectedPerson.LastName;
-            Mail = SelectedPerson.Mail;
-            Birthday = SelectedPerson.Birthday;
-        }
-        private void Clear()
-        {
-            Name = "";
-            LastName = "";
-            Mail = "";
-            Birthday = DateTime.Today;
+            get
+            {
+                return _closeCommand ??= new RelayCommand<object>(o => Environment.Exit(0));
+            }
         }
         public RelayCommand<object> SortByName
         {
@@ -284,6 +220,82 @@ namespace Lab4_CSHARP.ViewModels
                     SortMethod(o, 8));
             }
         }
+        public RelayCommand<object> Proceed
+        {
+            get
+            {
+                return _proceedCommand ??= new RelayCommand<object>(
+                    ProceedMethod, o => CanExecute());
+            }
+        }
+
+        #endregion
+
+        #endregion
+        private void AddMethod(object obj)
+        {
+            _edit = false;
+            Clear();
+            NavigationManager.Instance.Navigate(ViewType.Add);
+
+        }
+        private async void DeleteMethod(object obj)
+        {
+            if (MessageBox.Show($"Delete {SelectedPerson}?",
+                    "Delete?",
+                    MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+            LoaderManager.Instance.ShowLoader();
+            await Task.Run(() =>
+            {
+                StationManager.DataStorage.DeletePerson(SelectedPerson);
+                SelectedPerson = null;
+                People = new ObservableCollection<Person>(StationManager.DataStorage.UsersList);
+            });
+            LoaderManager.Instance.HideLoader();
+        }
+        private async void CopyMethod(object obj)
+        {
+            LoaderManager.Instance.ShowLoader();
+            await Task.Run(() =>
+            {
+                StationManager.DataStorage.AddPerson(new Person(SelectedPerson.Name, SelectedPerson.LastName,
+                    SelectedPerson.Mail, SelectedPerson.Birthday));
+                People = new ObservableCollection<Person>(StationManager.DataStorage.UsersList);
+            });
+            LoaderManager.Instance.HideLoader();
+        }
+        private void EditMethod(object obj)
+        {
+            _edit = true;
+            Fill();
+            NavigationManager.Instance.Navigate(ViewType.Edit);
+        }
+
+        private bool CanExecute()
+        {
+            return !string.IsNullOrEmpty(Mail) && Birthday.HasValue && !string.IsNullOrEmpty(LastName) && !string.IsNullOrEmpty(Name);
+        }
+
+        private bool UserSelected()
+        {
+            return SelectedPerson != null;
+        }
+
+        private void Fill()
+        {
+            Name = SelectedPerson.Name;
+            LastName = SelectedPerson.LastName;
+            Mail = SelectedPerson.Mail;
+            Birthday = SelectedPerson.Birthday;
+        }
+        private void Clear()
+        {
+            Name = "";
+            LastName = "";
+            Mail = "";
+            Birthday = DateTime.Today;
+        }
+   
         private async void SortMethod(object obj, int i)
         {
             LoaderManager.Instance.ShowLoader();
@@ -328,14 +340,7 @@ namespace Lab4_CSHARP.ViewModels
                 MessageBox.Show(e.Message);
             }
         }
-        public RelayCommand<object> Proceed
-        {
-            get
-            {
-                return _proceedCommand ??= new RelayCommand<object>(
-                    ProceedMethod, o => CanExecute());
-            }
-        }
+       
         private async void ProceedMethod(object obj)
         {
             try
