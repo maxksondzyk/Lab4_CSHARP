@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:dgx="urn:tom-englert.de/DataGridExtensions"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
@@ -20,7 +21,6 @@
                 <Button Content="Edit" Command="{Binding Path =EditCommand}"/>
                 <Button Content="Delete" Command="{Binding Path =DeleteCommand}"/>
                 <Button Content="Exit" Command="{Binding CloseCommand}"/>
-
             </ToolBar>
 
         </ToolBarTray>
@@ -35,9 +35,9 @@
                 <MenuItem Header="Sort by the Adultness" Command="{Binding SortByAdultness}"></MenuItem>
                 <MenuItem Header="Sort by the Birthdayness" Command="{Binding SortByBirthdayness}"></MenuItem>
             </MenuItem>
-        
+
         </Menu>
-        <DataGrid Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment ="Stretch" AutoGenerateColumns="False" ItemsSource="{Binding Path=People, Mode=OneWay,UpdateSourceTrigger=PropertyChanged}" SelectedValue="{Binding Path=SelectedPerson,UpdateSourceTrigger=PropertyChanged}" >
+        <DataGrid Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment ="Stretch" AutoGenerateColumns="False"  ItemsSource="{Binding Path=People, Mode=OneWay,UpdateSourceTrigger=PropertyChanged}" dgx:DataGridFilter.IsAutoFilterEnabled="True" SelectedValue="{Binding Path=SelectedPerson,UpdateSourceTrigger=PropertyChanged}" >
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=OneWay}"></DataGridTextColumn>
                 <DataGridTextColumn Header="Last Name" Binding="{Binding LastName, Mode=OneWay}"></DataGridTextColumn>

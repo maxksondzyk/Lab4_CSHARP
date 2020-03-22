@@ -171,6 +171,7 @@ namespace Lab4_CSHARP.ViewModels
                 OnPropertyChanged();
             }
         }
+        
         public string Mail
         {
             private get =>_mail;
