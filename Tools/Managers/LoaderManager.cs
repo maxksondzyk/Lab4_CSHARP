@@ -1,6 +1,7 @@
 ﻿using System.Windows;
+using Lab4_CSHARP.Tools;
 
-namespace KsondzykLab2.Tools.Managers
+namespace Lab4_CSHARP.Tools.Managers
 {
 
     internal class LoaderManager
@@ -16,16 +17,11 @@ namespace KsondzykLab2.Tools.Managers
                     return _instance;
                 lock (Locker)
                 {
-                    return _instance ?? (_instance = new LoaderManager());
+                    return _instance ??= new LoaderManager();
                 }
             }
         }
         private ILoaderOwner _loaderOwner;
-
-        private LoaderManager()
-        {
-
-        }
 
         internal void Initialize(ILoaderOwner loaderOwner)
         {

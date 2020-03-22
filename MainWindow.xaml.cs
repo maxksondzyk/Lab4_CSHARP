@@ -1,18 +1,18 @@
 ﻿using System.Windows;
-using KsondzykLab2.ViewModels;
+using Lab4_CSHARP.Tools.DataStorage;
+using Lab4_CSHARP.Tools.Managers;
+using Lab4_CSHARP.ViewModels;
 
-namespace KsondzykLab2
+namespace Lab4_CSHARP
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
+            StationManager.Initialize(new SerializedDataStorage());
             DataContext = new MainWindowViewModel();
         }
-        
+
     }
 }

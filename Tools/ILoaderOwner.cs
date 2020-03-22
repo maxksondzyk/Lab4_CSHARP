@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Windows;
 
-namespace KsondzykLab2.Tools
+namespace Lab4_CSHARP.Tools
 {
     interface ILoaderOwner:INotifyPropertyChanged
     {

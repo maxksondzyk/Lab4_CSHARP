@@ -4,13 +4,15 @@ using Lab4_CSHARP.ViewModels;
 
 namespace Lab4_CSHARP.Views
 {
-    public partial class View : UserControl,INavigatable
+    /// <summary>
+    /// Interaction logic for AddView.xaml
+    /// </summary>
+    public partial class AddView : UserControl,INavigatable
     {
-        public View()
+        public AddView()
         {
             InitializeComponent();
             DataContext = ViewModel.Instance;
         }
-
     }
 }

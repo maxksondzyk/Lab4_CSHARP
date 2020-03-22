@@ -1,4 +1,4 @@
-﻿<Application x:Class="KsondzykLab2.App"
+﻿<Application x:Class="Lab4_CSHARP.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">

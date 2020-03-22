@@ -1,56 +1,170 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
-using KsondzykLab2.Models;
-using KsondzykLab2.Tools.Exceptions;
-using KsondzykLab2.Tools.Managers;
-using KsondzykLab2.Tools.MVVM;
+using Lab4_CSHARP.Models;
+using Lab4_CSHARP.Tools;
+using Lab4_CSHARP.Tools.Managers;
+using Lab4_CSHARP.Tools.MVVM;
+using Lab4_CSHARP.Tools.Navigation;
 
-namespace KsondzykLab2.ViewModels
+namespace Lab4_CSHARP.ViewModels
 {
 
-    internal class ViewModel : INotifyPropertyChanged
+    internal class ViewModel : BaseViewModel, INotifyPropertyChanged
     {
+        private static ViewModel _instance;
         #region Fields
-        private RelayCommand<object> _startCommand;
-        private Person _person = new Person();
-        private string _name;
-        private string _lastName;
-        private string _mail;
-        private string _isAdult;
-        private string _sunSign;
-        private string _chineseSign;
-        private string _isBirthday;
-        private DateTime? _birthday;
-        private string _birth;
+        private static DateTime? _birthday;
+        private RelayCommand<object> _proceedCommand;
+        private RelayCommand<object> _cancelCommand;
+        private static string _name;
+        private static string _lastName;
+        private static string _mail;
+        #region Commands
+        private RelayCommand<object> _addCommand;
+        private RelayCommand<object> _editCommand;
+        private RelayCommand<object> _deleteCommand;
+        private RelayCommand<object> _closeCommand;
+
+
+        private RelayCommand<object> _sortByName;
+        private RelayCommand<object> _sortByLastName;
+        private RelayCommand<object> _sortByMail;
+        private RelayCommand<object> _sortByBirthday;
+        private RelayCommand<object> _sortBySunSign;
+        private RelayCommand<object> _sortByChineseSign;
+        private RelayCommand<object> _sortByAdultness;
+        private RelayCommand<object> _sortByBirthdayness;
+
+        #endregion
+        private bool _edit;
+        private ObservableCollection<Person> _people;
         #endregion
 
         #region Properties
+
+        public static ViewModel Instance => _instance ??= new ViewModel();
+        internal ViewModel()
+        {
+        
+            _people = new ObservableCollection<Person>(StationManager.DataStorage.UsersList);
+        }
+        public ObservableCollection<Person> People
+        {
+            get => _people;
+            set
+            {
+               _people = value;
+                OnPropertyChanged();
+            }
+        }
+        public Person SelectedPerson { get; set; }
+        #region Commands
+        public RelayCommand<object> AddCommand
+        {
+            get
+            {
+                return _addCommand ??= new RelayCommand<object>(
+                    AddMethod);
+            }
+        }
+        private void AddMethod(object obj)
+        {
+            _edit = false;
+            Clear();
+            NavigationManager.Instance.Navigate(ViewType.Add);
+
+        }
+        public RelayCommand<object> EditCommand
+        {
+            get
+            {
+                return _editCommand ??= new RelayCommand<object>(
+                   EditMethod, o =>CanChange());
+            }
+        }
+       
+        private void EditMethod(object obj)
+        {
+            _edit = true;
+           Fill();
+           NavigationManager.Instance.Navigate(ViewType.Edit);
+        }
+        public RelayCommand<object> DeleteCommand
+        {
+            get
+            {
+                return _deleteCommand ??= new RelayCommand<object>(
+                    DeleteMethod, o =>CanChange());
+            }
+        }
+
+        private async void DeleteMethod(object obj)
+        {
+            if (MessageBox.Show($"Delete {SelectedPerson}?",
+                    "Delete?",
+                    MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+            LoaderManager.Instance.ShowLoader();
+            await Task.Run(() =>
+            {
+                StationManager.DataStorage.DeletePerson(SelectedPerson);
+                SelectedPerson = null;
+                People = new ObservableCollection<Person>(StationManager.DataStorage.UsersList);
+            }); 
+            LoaderManager.Instance.HideLoader();
+
+
+
+        }
+
+        public RelayCommand<object> CloseCommand
+        {
+            get
+            {
+                return _closeCommand ??= new RelayCommand<object>(o => Environment.Exit(0));
+            }
+        }
+
+
+        #endregion
+
+        #endregion
+
         public DateTime? Birthday
         {
-            private get => _birthday;
+            private get
+            {
+                return _birthday;
+            }
             set
             {
                 _birthday = value;
-                if (value != null) _birth = value.Value.ToShortDateString();
-
                 OnPropertyChanged();
             }
         }
         public string Name
         {
-            private get => _name;
+            private get
+            {
+                return _name;
+            }
             set
             {
-                _name = value;
+              
+                    _name = value;
                 OnPropertyChanged();
             }
         }
         public string LastName
         {
-            private get => _lastName;
+            private get
+            {
+                return _lastName;
+            }
             set
             {
                 _lastName = value;
@@ -59,7 +173,7 @@ namespace KsondzykLab2.ViewModels
         }
         public string Mail
         {
-            private get => _mail;
+            private get =>_mail;
             set
             {
                 _mail = value;
@@ -67,144 +181,169 @@ namespace KsondzykLab2.ViewModels
             }
         }
 
-        public string IsAdult
-        { 
-            get => _isAdult;
-            private set
-            {
-                _isAdult = value;
-                OnPropertyChanged();
-            }
-        }
-        public string IsBirthday
-        {
-            get => _isBirthday;
-            private set
-            {
-                _isBirthday = value;
-                OnPropertyChanged();
-            }
-        }
-        public string SunSign
-        {
-            get => _sunSign;
-            private set
-            {
-                _sunSign = value;
-                OnPropertyChanged();
-            }
-        }
-        public string ChineseSign
-        {
-            get => _chineseSign;
-           private set
-            {
-                _chineseSign = value;
-                OnPropertyChanged();
-            }
-        }
-        public string UserMail
-        {
-            get => _person.Mail;
-           private set
-            {
-                _person.Mail = value;
-                OnPropertyChanged();
-            }
-        }
-        public string UserName
-        {
-            get => _person.Name;
-            private set
-            {
-                _person.Name = value;
-                OnPropertyChanged();
-            }
-        }
-        public string UserLastName
-        {
-            get => _person.LastName;
-            private set
-            {
-                _person.LastName = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Birth
-        {
-            get => _birth;
-            private set
-            {
-                _birth = value;
-                OnPropertyChanged();
-            }
-        }
-        #endregion
         private bool CanExecute()
         {
             return !string.IsNullOrEmpty(Mail) && Birthday.HasValue && !string.IsNullOrEmpty(LastName) && !string.IsNullOrEmpty(Name);
         }
-        public RelayCommand<object> StartCommand
+
+        private bool CanChange()
+        {
+            return SelectedPerson != null;
+        }
+
+        private void Fill()
+        {
+            Name = SelectedPerson.Name;
+            LastName = SelectedPerson.LastName;
+            Mail = SelectedPerson.Mail;
+            Birthday = SelectedPerson.Birthday;
+        }
+        private void Clear()
+        {
+            Name = "";
+            LastName = "";
+            Mail = "";
+            Birthday = DateTime.Today;
+        }
+        public RelayCommand<object> SortByName
         {
             get
             {
-                return _startCommand ??= new RelayCommand<object>(Calculate, o => CanExecute());
+                return _sortByName ??= new RelayCommand<object>(o =>
+                    SortMethod(o, 1));
             }
-
         }
-        
-        private async void Calculate(object obj)
+        public RelayCommand<object> SortByLastName
         {
-          try
-          {
-                LoaderManager.Instance.ShowLoader();
-                await Task.Run(() => _person = new Person(Name,LastName,Mail,Birthday));
-
-                IsAdult = $"Adult: {_person.IsAdult}";
-                SunSign = $"Your sun sign: {_person.SunSign}";
-                ChineseSign = $"Your chinese sign: {_person.ChineseSign}";
-                IsBirthday = $"It's your birthday: {_person.isBirthday}";
-                UserName = $"Your name is {_person.Name}";
-                UserLastName = $"Your last name is {_person.LastName}";
-                Birth = $"Your birthday is: {_person.Birthday.Value.ToShortDateString()}";
-                UserMail = $"Your mail is: {_person.Mail}";
-                LoaderManager.Instance.HideLoader();
-                if (_person.Birthday.Value.Day.Equals(DateTime.Today.Day)&& _person.Birthday.Value.Month.Equals(DateTime.Today.Month))
+            get
+            {
+                return _sortByLastName ??= new RelayCommand<object>(o =>
+                    SortMethod(o, 2));
+            }
+        }
+        public RelayCommand<object> SortByMail
+        {
+            get
+            {
+                return _sortByMail ??= new RelayCommand<object>(o =>
+                    SortMethod(o, 3));
+            }
+        }
+        public RelayCommand<object> SortByBirthday
+        {
+            get
+            {
+                return _sortByBirthday ??= new RelayCommand<object>(o =>
+                    SortMethod(o, 4));
+            }
+        }
+        public RelayCommand<object> SortBySunSign
+        {
+            get
+            {
+                return _sortBySunSign ??= new RelayCommand<object>(o =>
+                    SortMethod(o, 5));
+            }
+        }
+        public RelayCommand<object> SortByChineseSign
+        {
+            get
+            {
+                return _sortByChineseSign ??= new RelayCommand<object>(o =>
+                    SortMethod(o, 6));
+            }
+        }
+        public RelayCommand<object> SortByAdultness
+        {
+            get
+            {
+                return _sortByAdultness ??= new RelayCommand<object>(o =>
+                    SortMethod(o, 7));
+            }
+        }
+        public RelayCommand<object> SortByBirthdayness
+        {
+            get
+            {
+                return _sortByBirthdayness ??= new RelayCommand<object>(o =>
+                    SortMethod(o, 8));
+            }
+        }
+        private async void SortMethod(object obj, int i)
+        {
+            LoaderManager.Instance.ShowLoader();
+            await Task.Run(() =>
+            {
+                var sortedPeople = i switch
                 {
-                    MessageBox.Show("Happy Birthday!");
-                }
-                   
-          }
-          catch (InvalidFutureDateException e)
-          {
-              clear();
-              MessageBox.Show(e.Message);
-          }
-          catch (InvalidPastDateException e)
-          {
-              clear();
-              MessageBox.Show(e.Message);
-          }
-          catch (InvalidMailException e)
-          {
-              clear();
-              MessageBox.Show(e.Message);
-          }
-        }
-
-        private void clear()
-        {
-            IsAdult = "";
-            SunSign = "";
-            ChineseSign = "";
-            IsBirthday = "";
-            UserName = "";
-            UserLastName = "";
-            Birth = "";
-            UserMail = "";
+                    1 => (from u in _people orderby u.Name select u),
+                    2 => (from u in _people orderby u.LastName select u),
+                    3 => (from u in _people orderby u.Mail select u),
+                    4 => (from u in _people orderby u.Birthday select u),
+                    5 => (from u in _people orderby u.SunSign select u),
+                    6 => (from u in _people orderby u.ChineseSign select u),
+                    7 => (from u in _people orderby u.IsAdult select u),
+                    _ => (from u in _people orderby u.IsBirthday select u)
+                };
+                People = new ObservableCollection<Person>(sortedPeople);
+                StationManager.DataStorage.UsersList = People;
+            });
             LoaderManager.Instance.HideLoader();
         }
+
+        
+        public RelayCommand<object> Cancel
+        {
+            get
+            {
+                return _cancelCommand ??= new RelayCommand<object>(
+                    CancelMethod);
+            }
+        }
+        private void CancelMethod(object obj)
+        {
+            try
+            {
+                if (MessageBox.Show("Are you sure?", "Cancel?",
+                        MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                    NavigationManager.Instance.Navigate(ViewType.Main);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+        public RelayCommand<object> Proceed
+        {
+            get
+            {
+                return _proceedCommand ??= new RelayCommand<object>(
+                    ProceedMethod, o => CanExecute());
+            }
+        }
+        private async void ProceedMethod(object obj)
+        {
+            await Task.Run(() =>
+            {
+                if (_edit)
+                {
+                    StationManager.DataStorage.EditPerson(SelectedPerson,
+                        new Person(Name, LastName, Mail, Birthday));
+
+
+                    _edit = false;
+                }
+                else
+                {
+                    StationManager.DataStorage.AddPerson(new Person(Name, LastName, Mail, Birthday));
+                }
+
+                People = new ObservableCollection<Person>(StationManager.DataStorage.UsersList);
+                NavigationManager.Instance.Navigate(ViewType.Main);
+            });
+
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

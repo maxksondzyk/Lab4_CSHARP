@@ -1,20 +1,31 @@
 ﻿using System.Windows;
-using KsondzykLab2.Tools;
-using KsondzykLab2.Tools.Managers;
+using Lab4_CSHARP.Tools;
+using Lab4_CSHARP.Tools.Managers;
+using Lab4_CSHARP.Tools.Navigation;
 
-namespace KsondzykLab2.ViewModels
+namespace Lab4_CSHARP.ViewModels
 {
-    internal class MainWindowViewModel:BaseViewModel,ILoaderOwner
+    internal class MainWindowViewModel:BaseViewModel,ILoaderOwner, IContentOwner
     {
         #region Fields
         private Visibility _loaderVisibility = Visibility.Hidden;
         private bool _isControlEnabled = true;
+        private INavigatable _content;
         #endregion
 
         #region Properties
+        public INavigatable Content
+        {
+            get => _content;
+            set
+            {
+                _content = value;
+                OnPropertyChanged();
+            }
+        }
         public Visibility LoaderVisibility
         {
-            get { return _loaderVisibility; }
+            get => _loaderVisibility;
             set
             {
                 _loaderVisibility = value;
@@ -23,7 +34,7 @@ namespace KsondzykLab2.ViewModels
         }
         public bool IsControlEnabled
         {
-            get { return _isControlEnabled; }
+            get => _isControlEnabled;
             set
             {
                 _isControlEnabled = value;
@@ -35,6 +46,10 @@ namespace KsondzykLab2.ViewModels
         internal MainWindowViewModel()
         {
             LoaderManager.Instance.Initialize(this);
+            LoaderManager.Instance.Initialize(this);
+            NavigationManager.Instance.Initialize(new ListNavigationModel(this));
+            NavigationManager.Instance.Navigate(ViewType.Main);
         }
+
     }
 }

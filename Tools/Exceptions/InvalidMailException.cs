@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KsondzykLab2.Tools.Exceptions
+namespace Lab4_CSHARP.Tools.Exceptions
 {
     internal class InvalidMailException : ArgumentException
     {

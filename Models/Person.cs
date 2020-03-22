@@ -1,78 +1,57 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using KsondzykLab2.Tools;
-using KsondzykLab2.Tools.Exceptions;
+using Lab4_CSHARP.Tools.Exceptions;
 
-namespace KsondzykLab2.Models
+namespace Lab4_CSHARP.Models
 {
-    internal class Person
+    [Serializable]
+    public class Person
     {
         #region Fields
 
-        private string _name;
-        private string _lastName;
-        private string _mail;
-        private DateTime? _birthday;
-        public readonly string IsAdult;
-        public readonly string SunSign;
-        public readonly string ChineseSign;
-        public readonly string isBirthday;
         #endregion
 
         public Person(string name, string lastName, string mail, DateTime? birthday)
         {
-            this._name = name;
-            this._lastName = lastName;
-            this._mail = mail;
-            this._birthday = birthday;
+            Name = name;
+            LastName = lastName;
+            Mail = mail;
+            var rx = new Regex(@"\w+@\w+.\w+",
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            var matches = rx.Matches(Mail);
+            if (matches.Count == 0&&Mail!="\0")
+            {
+                throw new InvalidMailException("The mail address is incorrect");
+            }
+            Birthday = birthday;
             
             IsAdult = AdultCalculate();
-            isBirthday = BirthdayCalculate();
+            IsBirthday = BirthdayCalculate();
             SunSign = SunSignCalculate();
             ChineseSign = ChineseSignCalculate();
-           
         }
 
-        public Person(string name = " ", string lastName = " ", string mail = " "):this(name,lastName,mail, DateTime.Today) { }
+        public string IsAdult { get; }
+
+        public string IsBirthday { get; }
+
+        public string ChineseSign { get; }
+
+        public string SunSign { get; }
+        public Person(string name = " ", string lastName = " ", string mail = "\0") :this(name,lastName,mail, DateTime.Today) { }
 
         public Person(string name, string lastName, DateTime? birthday) : this(name, lastName, "no@email.address", birthday) { }
 
-        public string LastName
-        {
-            get => _lastName;
-            set => _lastName = value;
-        }
+        public string LastName { get; set; }
 
-        public string Name
-        {
-            get => _name;
-            set => _name = value;
-        }
+        public string Name { get; set; }
 
-        public string Mail
-        {
-            get
-            {
-                var rx = new Regex(@"\w+@\w+.\w+",
-                    RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                var matches = rx.Matches(_mail);
-                if (matches.Count == 0)
-                {
-                    throw new InvalidMailException("The mail address is incorrect");
-                }
-                return _mail;
-            }
-            set => _mail = value;
-        }
+        public string Mail { get; set; }
 
-        public DateTime? Birthday
-        {
-            get => _birthday;
-            set => _birthday = value;
-        }
+        public DateTime? Birthday { get; set; }
         private string ChineseSignCalculate()
         {
-            var result = (_birthday.Value.Year % 12) switch
+            var result = (Birthday.Value.Year % 12) switch
             {
                 4 => "Rat",
                 5 => "Ox",
@@ -93,8 +72,8 @@ namespace KsondzykLab2.Models
 
         private string SunSignCalculate()
         {
-            var day = _birthday.Value.Day;
-            var result = _birthday.Value.Month switch
+            var day = Birthday.Value.Day;
+            var result = Birthday.Value.Month switch
             {
                 3 => (day >= 21 ? "Pisces" : "Aries"),
                 4 => (day <= 20 ? "Aries" : "Taurus"),
@@ -115,7 +94,7 @@ namespace KsondzykLab2.Models
 
         private string BirthdayCalculate()
         {
-            if (_birthday.Value.Day.Equals(DateTime.Today.Day) && _birthday.Value.Month.Equals(DateTime.Today.Month))
+            if (Birthday.Value.Day.Equals(DateTime.Today.Day) && Birthday.Value.Month.Equals(DateTime.Today.Month))
                 return "true";
 
             return "false";
@@ -123,9 +102,9 @@ namespace KsondzykLab2.Models
 
         private string AdultCalculate()
         {
-            var leapYears = (DateTime.Now.Year - _birthday.Value.Year) / 4;
+            var leapYears = (DateTime.Now.Year - Birthday.Value.Year) / 4;
             var leapDays = leapYears * 366;
-            var timeSpan = (DateTime.Today - _birthday.Value.Date);
+            var timeSpan = (DateTime.Today - Birthday.Value.Date);
             var totalDays = timeSpan.Days;
             totalDays -= leapDays;
             var years = leapYears + totalDays / 365;

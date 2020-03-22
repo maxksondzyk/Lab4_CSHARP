@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace KsondzykLab2.Tools.MVVM
+namespace Lab4_CSHARP.Tools.MVVM
 {
 
     public class RelayCommand<T> : ICommand

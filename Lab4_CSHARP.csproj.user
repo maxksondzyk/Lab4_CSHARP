@@ -7,12 +7,18 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Views\AddView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\View.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="MainWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\AddView.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\View.xaml">

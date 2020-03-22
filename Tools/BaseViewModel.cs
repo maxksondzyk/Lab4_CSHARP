@@ -1,9 +1,7 @@
-﻿
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using KsondzykLab2.Annotations;
 
-namespace KsondzykLab2.Tools
+namespace Lab4_CSHARP.Tools
 {
     internal class BaseViewModel:INotifyPropertyChanged
     {

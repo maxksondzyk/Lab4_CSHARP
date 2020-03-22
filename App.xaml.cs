@@ -1,11 +1,8 @@
 ﻿
 using System.Windows;
 
-namespace KsondzykLab2
+namespace Lab4_CSHARP
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
     }
