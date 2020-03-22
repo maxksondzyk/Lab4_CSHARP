@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Lab4_CSHARP.Models;
 using Lab4_CSHARP.Tools;
+using Lab4_CSHARP.Tools.Exceptions;
 using Lab4_CSHARP.Tools.Managers;
 using Lab4_CSHARP.Tools.MVVM;
 using Lab4_CSHARP.Tools.Navigation;
@@ -27,6 +28,7 @@ namespace Lab4_CSHARP.ViewModels
         #region Commands
         private RelayCommand<object> _addCommand;
         private RelayCommand<object> _editCommand;
+        private RelayCommand<object> _copyCommand;
         private RelayCommand<object> _deleteCommand;
         private RelayCommand<object> _closeCommand;
 
@@ -84,10 +86,22 @@ namespace Lab4_CSHARP.ViewModels
             get
             {
                 return _editCommand ??= new RelayCommand<object>(
-                   EditMethod, o =>CanChange());
+                   EditMethod, o =>UserSelected());
             }
         }
-       
+        public RelayCommand<object> CopyCommand
+        {
+            get
+            {
+                return _copyCommand ??= new RelayCommand<object>(
+                    CopyMethod, o => UserSelected());
+            }
+        }
+        private void CopyMethod(object obj)
+        {
+            StationManager.DataStorage.AddPerson(new Person(SelectedPerson.Name, SelectedPerson.LastName, SelectedPerson.Mail, SelectedPerson.Birthday));
+            People = new ObservableCollection<Person>(StationManager.DataStorage.UsersList);
+        }
         private void EditMethod(object obj)
         {
             _edit = true;
@@ -99,7 +113,7 @@ namespace Lab4_CSHARP.ViewModels
             get
             {
                 return _deleteCommand ??= new RelayCommand<object>(
-                    DeleteMethod, o =>CanChange());
+                    DeleteMethod, o =>UserSelected());
             }
         }
 
@@ -187,7 +201,7 @@ namespace Lab4_CSHARP.ViewModels
             return !string.IsNullOrEmpty(Mail) && Birthday.HasValue && !string.IsNullOrEmpty(LastName) && !string.IsNullOrEmpty(Name);
         }
 
-        private bool CanChange()
+        private bool UserSelected()
         {
             return SelectedPerson != null;
         }
@@ -324,25 +338,39 @@ namespace Lab4_CSHARP.ViewModels
         }
         private async void ProceedMethod(object obj)
         {
-            await Task.Run(() =>
+            try
             {
-                if (_edit)
+                await Task.Run(() =>
                 {
-                    StationManager.DataStorage.EditPerson(SelectedPerson,
-                        new Person(Name, LastName, Mail, Birthday));
+                    if (_edit)
+                    {
+                        StationManager.DataStorage.EditPerson(SelectedPerson,
+                            new Person(Name, LastName, Mail, Birthday));
 
 
-                    _edit = false;
-                }
-                else
-                {
-                    StationManager.DataStorage.AddPerson(new Person(Name, LastName, Mail, Birthday));
-                }
+                        _edit = false;
+                    }
+                    else
+                    {
+                        StationManager.DataStorage.AddPerson(new Person(Name, LastName, Mail, Birthday));
+                    }
 
-                People = new ObservableCollection<Person>(StationManager.DataStorage.UsersList);
-                NavigationManager.Instance.Navigate(ViewType.Main);
-            });
-
+                    People = new ObservableCollection<Person>(StationManager.DataStorage.UsersList);
+                    NavigationManager.Instance.Navigate(ViewType.Main);
+                });
+            }
+            catch (InvalidFutureDateException e)
+            {
+                MessageBox.Show(e.Message);
+            }
+            catch (InvalidPastDateException e)
+            {
+                MessageBox.Show(e.Message);
+            }
+            catch (InvalidMailException e)
+            {
+                MessageBox.Show(e.Message);
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

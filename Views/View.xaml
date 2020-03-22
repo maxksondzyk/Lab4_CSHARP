@@ -20,6 +20,7 @@
                 <Button Content="Add" Command="{Binding Path =AddCommand}"/>
                 <Button Content="Edit" Command="{Binding Path =EditCommand}"/>
                 <Button Content="Delete" Command="{Binding Path =DeleteCommand}"/>
+                <Button Content="Copy" Command="{Binding Path =CopyCommand}"/>
                 <Button Content="Exit" Command="{Binding CloseCommand}"/>
             </ToolBar>
 

@@ -113,7 +113,7 @@ namespace Lab4_CSHARP.Models
                 throw new InvalidFutureDateException("You haven't been born yet");
             }
 
-            if (years > 135)
+            if (years >= 135)
             {
                 throw new InvalidPastDateException("You are too old to be alive");
             }
